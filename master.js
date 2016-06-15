@@ -11,12 +11,6 @@ const pfs = pify(fs)
 module.exports = () => {
     const worker = cluster.fork();
     const server = http.createServer(function (req, res) {
-        let imageData = share.parseUrl(req.url);
-        if (imageData == null) {
-            res.statusCode = 404;
-            res.end();
-        }
-
         const sendFile = (filePath) => {
             pfs.stat(filePath)
                 .then(stat => {
@@ -34,13 +28,28 @@ module.exports = () => {
                 .catch(console.log)
         }
 
+        const sendNotFound = () => {
+            res.statusCode = 404;
+            res.end();
+        }
+
         const onFileGenerated = (msg) => {
             if(msg.id == imageData.id &&
                 msg.width == imageData.width &&
                 msg.height == imageData.height) {//same as sended
                     worker.removeListener("message", onFileGenerated);//remove listener for prevent posible memory leak
-                    sendFile(filePath);
+                    if(msg.success)
+                        sendFile(filePath);
+                    else
+                        sendNotFound();
             }
+        }
+
+        let imageData = share.parseUrl(req.url);
+        //send not found
+        if (imageData == null) {
+            sendNotFound();
+            return;
         }
 
         let fielName = share.getFileName(imageData);
@@ -53,6 +62,7 @@ module.exports = () => {
                 worker.send(imageData);
             }
         });
+        req.setTimeout(constants.REQUEST_TIMEOUT)
     });
     server.listen(8080)
 }

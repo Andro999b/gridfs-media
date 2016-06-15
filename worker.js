@@ -75,12 +75,16 @@ module.exports = () => {
                     .then(() => {
                         inprogress.delete(fileName);
                         console.log(`Image ${fileName} generated`);
+
+                        msg.success = true; 
                         process.send(msg);
                     })
                     .catch(err => {
                         inprogress.delete(fileName)
                         console.log(`Fail to generate image ${fileName}`, err)
-                        process.send({err, msg});
+
+                        msg.success = false; 
+                        process.send(msg);
                     })
 
             });

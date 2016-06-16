@@ -114,7 +114,7 @@ module.exports = () => {
                 if (inprogress.has(params.fileName))
                     return;//do not add unqueued file
                 
-                inprogress.add(fileName);
+                inprogress.add(params.fileName);
 
                 queue.push(params);
                 next();

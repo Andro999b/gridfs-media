@@ -17,12 +17,18 @@ module.exports = () => {
     }
 
     //start workers
-    let generator = cluster.fork();
-    generator.on('error', err => console.log('Generator Fail: ', err))
-    generator.on('exit', (worker, code, signal) => {
-        console.log('Generator died :(. Okay lets spawn new', code, signal)
+    let generator;
+    const spawnGenerator = () => {
         generator = cluster.fork();
-    })
+        generator.setMaxListeners(100);
+        generator.on('error', err => console.log('Generator Fail: ', err))
+        generator.on('exit', (worker, code, signal) => {
+            console.log('Generator died :(. Okay lets spawn new', code, signal)
+            spawnGenerator();
+        })
+    }
+    spawnGenerator();
+    
     
     //start http server
     const server = http.createServer(function (req, res) {

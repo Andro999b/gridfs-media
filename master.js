@@ -17,7 +17,8 @@ module.exports = () => {
     }
 
     //start workers
-    const worker = cluster.fork();
+    const generator = cluster.fork();
+    generator.on('error', err => console.log('Generator Fail: ', err))
     
     //start http server
     const server = http.createServer(function (req, res) {
@@ -58,7 +59,7 @@ module.exports = () => {
 
         const onFileGenerated = (msg) => {
             if(msg.fileName == imageParams.fileName) {//same as sended
-                    worker.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
+                    generator.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
                     if(msg.success)
                         sendFile(filePath);
                     else
@@ -83,8 +84,8 @@ module.exports = () => {
             if (exists) {
                 sendFile(filePath)
             } else {
-                worker.on("message", onFileGenerated)
-                worker.send(imageParams);
+                generator.on("message", onFileGenerated)
+                generator.send(imageParams);
             }
         });
         req.setTimeout(constants.REQUEST_TIMEOUT)

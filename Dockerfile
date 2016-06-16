@@ -5,10 +5,13 @@ RUN apt-get update
 RUN apt-get install -y graphicsmagick
 
 RUN mkdir -p /opt/media
+WORKDIR /opt/media
+
 COPY package.json /opt/media/
 RUN npm install
+
 COPY . /opt/media
 
 EXPOSE 8080
-WORKDIR /opt/media
+
 CMD [ "npm", "start" ]

@@ -75,17 +75,17 @@ module.exports = () => {
             }
 
             let inprogress = new Set();//current in progress tasks
+            let activeCount = 0;//semaphor
             let queue = [];//queue of generation tasks
 
             const next = () => {
-                if (inprogress.size >= constants.PARALLEL_GENERATION_COUNT) return;
+                if (activeCount >= constants.PARALLEL_GENERATION_COUNT) return;
 
                 let params = queue.pop();
                 let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
 
-                inprogress.add(fileName);
-
+                activeCount++;
                 generate(params, filePath)
                     .then(() => {
                         inprogress.delete(fileName);
@@ -93,6 +93,8 @@ module.exports = () => {
 
                         params.success = true;
                         process.send(params);
+
+                        activeCount--;
                         next();
                     })
                     .catch(err => {
@@ -101,6 +103,8 @@ module.exports = () => {
 
                         params.success = false;
                         process.send(params);
+
+                        activeCount--;
                         next();
                     })
 
@@ -109,6 +113,8 @@ module.exports = () => {
             process.on("message", params => {
                 if (inprogress.has(params.fileName))
                     return;//do not add unqueued file
+                
+                inprogress.add(fileName);
 
                 queue.push(params);
                 next();

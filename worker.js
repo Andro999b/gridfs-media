@@ -30,8 +30,11 @@ const resize = (width, height, mode) => {
             let iw = size.width, ih = size.height;
             switch (mode) {
                 case "c": {//crop
+                    let vertical = iw < ih; 
                     let scale = iw < ih ? width/iw : height/ih;
-                    image.scale(iw * scale,  ih * scale).crop(width, height, 0, 0)
+                    image.scale(iw * scale,  ih * scale);
+                    if(!vertical) image.gravity("Center")
+                    image.crop(width, height);
                     break;
                 }
                 case "s"://scale

@@ -36,23 +36,23 @@ module.exports = () => {
             pfs.stat(filePath)
                 .then(stat => {//prepare headers and read file(if it need)
                     let lastModified = stat.mtime.toUTCString();
-                    let headers = {
-                        'Content-Type': 'image/jpeg',
-                        'Content-Length': stat.size,
-                        'Cache-Control' : constants.CACHE_CONTROL,
-                        'Last-Modified': lastModified
-                    };
-
                     let modifiedSince = req.headers["if-modified-since"];
                     //send 304 
                     if(modifiedSince != null && 
                        new Date(modifiedSince).getTime() >= new Date(lastModified).getTime()) {
-                        res.writeHead(304, headers);
+                        res.writeHead(304, {
+                            'Last-Modified': lastModified
+                        });
                         return null;
                     }
 
                     //send 200
-                    res.writeHead(200, headers);
+                    res.writeHead(200, {
+                        'Content-Type': 'image/jpeg',
+                        'Content-Length': stat.size,
+                        'Cache-Control' : constants.CACHE_CONTROL,
+                        'Last-Modified': lastModified
+                    });
                     return pfs.readFile(filePath);
                 })
                 .then(buf => {//send response

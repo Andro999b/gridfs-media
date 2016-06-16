@@ -11,7 +11,8 @@ const constants = require("./consts");
 const pfs = pify(fs);
 const pmongodb = pify(mongodb.MongoClient);
 
-const resize = (width, height, mode) => {
+//conver image
+const conver = (width, height, operation) => {
     return pify((data, callback) => {
         let type = null;
         let {buffer, contentType} = data;
@@ -25,15 +26,15 @@ const resize = (width, height, mode) => {
 
         let image = gm(buffer, `image.${type}`);
         image.size((err, size) => {
-            if(err) { callback(err); return; }
+            if (err) { callback(err); return; }
 
             let iw = size.width, ih = size.height;
-            switch (mode) {
+            switch (operation) {
                 case "c": {//crop
-                    let vertical = iw < ih; 
-                    let scale = iw < ih ? width/iw : height/ih;
-                    image.scale(iw * scale,  ih * scale);
-                    if(!vertical) image.gravity("Center")
+                    let vertical = iw < ih;
+                    let scale = iw < ih ? width / iw : height / ih;
+                    image.scale(iw * scale, ih * scale);
+                    if (!vertical) image.gravity("Center")
                     image.crop(width, height);
                     break;
                 }
@@ -48,6 +49,7 @@ const resize = (width, height, mode) => {
     })
 }
 
+//down load from gridfs
 const download = pify(function (bucket, id, callback) {
     let contentType, buffer;
     bucket.openDownloadStream(mongodb.ObjectId(id))
@@ -64,21 +66,24 @@ module.exports = () => {
         .then(db => new mongodb.GridFSBucket(db, { bucketName: constants.BACKET_NAME }))
         .then(bucket => {
             const generate = (params, filePath) => {
-                let {id, width, height, mode} = params;
+                let {id, width, height, operation} = params;
 
                 return download(bucket, id)
-                    .then(resize(width, height, mode))
+                    .then(conver(width, height, operation))
                     .then(minify)
                     .then(buf => pfs.writeFile(filePath, buf))
             }
 
-            let inprogress = new Set();
+            let inprogress = new Set();//current in progress tasks
+            let queue = [];//queue of generation tasks
 
-            process.on("message", params => {
+            const next = () => {
+                if (inprogress.size >= constants.PARALLEL_GENERATION_COUNT) return;
+
+                let params = queue.pop();
                 let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
 
-                if (inprogress.has(fileName)) return;
                 inprogress.add(fileName);
 
                 generate(params, filePath)
@@ -88,6 +93,7 @@ module.exports = () => {
 
                         params.success = true;
                         process.send(params);
+                        next();
                     })
                     .catch(err => {
                         inprogress.delete(fileName)
@@ -95,8 +101,17 @@ module.exports = () => {
 
                         params.success = false;
                         process.send(params);
+                        next();
                     })
 
+            }
+
+            process.on("message", params => {
+                if (inprogress.has(params.fileName))
+                    return;//do not add unqueued file
+
+                queue.push(params);
+                next();
             });
         })
         .then(() => console.log('Generator Worker started'))

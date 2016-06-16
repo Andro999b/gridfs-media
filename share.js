@@ -9,12 +9,12 @@ module.exports = {
         let matches = url.match(urlMatcher);
         if(matches == null || matches.length < 4) return null;
 
-        let mode = matches[4] ? matches[4] : "s"; 
+        let operation = matches[4] ? matches[4] : "s"; 
         return {
             id: matches[1],
             width: parseInt(matches[2]),
             height: parseInt(matches[3]),
-            mode
+            operation
         }
     },
     isAcceptebleSize: params => {

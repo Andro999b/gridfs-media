@@ -17,5 +17,6 @@ module.exports = {
     CACHE_CONTROL: `max-age=${7 * 24 * 3600}, public`,
     JPEG_QUALITY:  90,
     REQUEST_TIMEOUT: 6000,
-    ACCEPTEBLE_SIZES: accetebleSizes
+    ACCEPTEBLE_SIZES: accetebleSizes,
+    PARALLEL_GENERATION_COUNT: process.env.PARALLEL_GENERATION_COUNT || 4
 }

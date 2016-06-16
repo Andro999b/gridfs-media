@@ -16,5 +16,13 @@ module.exports = {
             height: parseInt(matches[3]),
             mode
         }
+    },
+    isAcceptebleSize: params => {
+        for (let size of constants.ACCEPTEBLE_SIZES) {
+            if(size.width == params.width && 
+               size.height == params.height)
+                return true;
+        }
+        return false;
     }
 }

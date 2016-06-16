@@ -30,7 +30,7 @@ const resize = (width, height, mode) => {
             let iw = size.width, ih = size.height;
             switch (mode) {
                 case "c": {//crop
-                    let scale = iw < ih ? width / iw : height / ih;
+                    let scale = iw < ih ? width/iw : height/ih;
                     image.scale(iw * scale,  ih * scale).crop(width, height, 0, 0)
                     break;
                 }
@@ -72,7 +72,7 @@ module.exports = () => {
             let inprogress = new Set();
 
             process.on("message", params => {
-                let fileName = share.getFileName(params);
+                let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
 
                 if (inprogress.has(fileName)) return;
@@ -81,14 +81,14 @@ module.exports = () => {
                 generate(params, filePath)
                     .then(() => {
                         inprogress.delete(fileName);
-                        console.log(`[Generator Worker #${cluster.worker.id}] Image ${fileName} generated`);
+                        console.log(`[Generator Worker] Image ${fileName} generated`);
 
                         params.success = true;
                         process.send(params);
                     })
                     .catch(err => {
                         inprogress.delete(fileName)
-                        console.log(`[Generator Worker #${cluster.worker.id}] Fail to generate image ${fileName}`, err)
+                        console.log(`[Generator Worker] Fail to generate image ${fileName}`, err)
 
                         params.success = false;
                         process.send(params);
@@ -96,6 +96,6 @@ module.exports = () => {
 
             });
         })
-        .then(() => console.log(`Generator Worker #${cluster.worker.id} started`))
-        .catch(err => console.log(`Fail to start worker #${cluster.worker.id}`, err))
+        .then(() => console.log('Generator Worker started'))
+        .catch(err => console.log('Fail to start worker', err))
 }

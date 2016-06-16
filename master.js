@@ -8,48 +8,45 @@ const constants = require("./consts");
 
 const numCPUs = require('os').cpus().length;
 
-const pfs = pify(fs)
+const pfs = pify(fs);
 
 module.exports = () => {
-    //create fiel directory if not exists
+    //create file directory if not exists
     if (!fs.existsSync(constants.FILE_DIR)){
         fs.mkdirSync(constants.FILE_DIR);
     }
 
     //start workers
-    const workers = [];
-    for (var i = 0; i < numCPUs; i++) {
-        worker = cluster.fork();
-        worker.on('exit', (code, signal) => {
-            if (signal) {
-                console.log(`worker was killed by signal: ${signal}`);
-            } else if (code !== 0) {
-                console.log(`worker exited with error code: ${code}`);
-            }
-        });
-        workers.push(worker);
-    }
-
-    const getWorker = (id) => {
-        let index = id.charCodeAt(id.length - 1) % workers.length;
-        return workers[index];
-    }
+    const worker = cluster.fork();
     
     //start http server
     const server = http.createServer(function (req, res) {
         const sendFile = (filePath) => {
             pfs.stat(filePath)
-                .then(stat => {
-                    res.writeHead(200, {
+                .then(stat => {//prepare headers and read file(if it need)
+                    let lastModified = stat.mtime.toUTCString();
+                    let headers = {
                         'Content-Type': 'image/jpeg',
                         'Content-Length': stat.size,
-                        'Cache-Control' : constants.CACHE_CONTROL 
-                    })
+                        'Cache-Control' : constants.CACHE_CONTROL,
+                        'Last-Modified': lastModified
+                    };
+
+                    let modifiedSince = req.headers["if-modified-since"];
+                    //send 304 
+                    if(modifiedSince != null && 
+                       new Date(modifiedSince).getTime() >= new Date(lastModified).getTime()) {
+                        res.writeHead(304, headers);
+                        return null;
+                    }
+
+                    //send 200
+                    res.writeHead(200, headers);
                     return pfs.readFile(filePath);
                 })
-                .then(buf => {
+                .then(buf => {//send response
                     res.write(buf);
-                    res.end("ok")
+                    res.end('ok')
                 })
                 .catch(console.log)
         }
@@ -60,11 +57,8 @@ module.exports = () => {
         }
 
         const onFileGenerated = (msg) => {
-            if(msg.id == imageParams.id &&
-                msg.width == imageParams.width &&
-                msg.height == imageParams.height &&
-                msg.mode == imageParams.mode) {//same as sended
-                    worker.removeListener("message", onFileGenerated);//remove listener for prevent posible memory leak
+            if(msg.fileName == imageParams.fileName) {//same as sended
+                    worker.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
                     if(msg.success)
                         sendFile(filePath);
                     else
@@ -74,15 +68,17 @@ module.exports = () => {
 
         //request process start here
         const imageParams = share.parseUrl(req.url);
+        
         //send not found
-        if (imageParams == null) {
+        if (imageParams == null || !share.isAcceptebleSize(imageParams)) {
             sendNotFound();
             return;
         }
 
-        const worker = getWorker(imageParams.id);
-        const fielName = share.getFileName(imageParams);
-        const filePath = share.getFilePath(fielName);
+        //generate file name
+        imageParams.fileName = share.getFileName(imageParams);
+
+        const filePath = share.getFilePath(imageParams.fileName);
         fs.exists(filePath, exists => {
             if (exists) {
                 sendFile(filePath)
@@ -96,5 +92,4 @@ module.exports = () => {
     server.listen(8080)
     //errors
     server.on('error', console.log)
-    process.on('uncaughtException', console.log);
 }

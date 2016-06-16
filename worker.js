@@ -58,7 +58,7 @@ const minify = imageminMozjpeg({ quality: constants.JPEG_QUALITY });
 
 module.exports = () => {
     pmongodb.connect(constants.MONGO_URI)
-        .then(db => new mongodb.GridFSBucket(db, { bucketName: "marketgoods" }))
+        .then(db => new mongodb.GridFSBucket(db, { bucketName: constants.BACKET_NAME }))
         .then(bucket => {
             const generate = (params, filePath) => {
                 let {id, width, height, mode} = params;

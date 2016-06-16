@@ -79,7 +79,8 @@ module.exports = () => {
             let queue = [];//queue of generation tasks
 
             const next = () => {
-                if (activeCount >= constants.PARALLEL_GENERATION_COUNT) return;
+                if (activeCount >= constants.PARALLEL_GENERATION_COUNT || !queue.length)
+                    return;
 
                 let params = queue.pop();
                 let fileName = params.fileName;

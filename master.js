@@ -31,7 +31,7 @@ module.exports = () => {
     }
 
     const getWorker = (id) => {
-        let index = id.charAt(id.length - 1) % workers.length;
+        let index = id.charCodeAt(id.length - 1) % workers.length;
         return workers[index];
     }
     
@@ -94,4 +94,7 @@ module.exports = () => {
         req.setTimeout(constants.REQUEST_TIMEOUT)
     });
     server.listen(8080)
+    //errors
+    server.on('error', console.log)
+    process.on('uncaughtException', console.log);
 }

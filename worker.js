@@ -1,94 +1,101 @@
 const cluster = require('cluster');
 const fs = require('fs');
-const lwip = require('lwip');
+const gm = require('gm');
 const mongodb = require("mongodb");
 const pify = require("pify");
-const imageminJpegtran = require('imagemin-jpegtran');
+const imageminMozjpeg = require('imagemin-mozjpeg');
 
 const share = require("./share");
 const constants = require("./consts");
 
 const pfs = pify(fs);
-const plwip = pify(lwip);
 const pmongodb = pify(mongodb.MongoClient);
 
-const resize = (width, height) => {
-    return pify(function(data, callback) {
+const resize = (width, height, mode) => {
+    return pify((data, callback) => {
         let type = null;
-        let {fileBuffer, contentType} = data;
+        let {buffer, contentType} = data;
 
-        switch(contentType){
+        switch (contentType) {
             case "image/jpeg": type = "jpg"; break;
             case "image/png": type = "png"; break;
             case "image/gif": type = "gif"; break;
         }
 
-        plwip.open(fileBuffer, type)
-            .then((image) => {
-                image.batch()
-                    .cover(width, height)
-                    .toBuffer("jpg", callback);
-            })
-            .catch(callback)
-    });
-};
+
+        let image = gm(buffer, `image.${type}`);
+        image.size((err, size) => {
+            if(err) { callback(err); return; }
+
+            let iw = size.width, ih = size.height;
+            switch (mode) {
+                case "c": {//crop
+                    let scale = iw < ih ? width / iw : height / ih;
+                    image.scale(iw * scale,  ih * scale).crop(width, height, 0, 0)
+                    break;
+                }
+                case "s"://scale
+                default: {
+                    image.resize(width, height)
+                }
+            }
+
+            image.quality(100).toBuffer("JPEG", callback);
+        })
+    })
+}
 
 const download = pify(function (bucket, id, callback) {
-    let contentType, fileBuffer;
+    let contentType, buffer;
     bucket.openDownloadStream(mongodb.ObjectId(id))
-            .on("data", buf => fileBuffer = buf)
-            .on("file", meta => contentType = meta.contentType)
-            .on("end", () => callback(null, {fileBuffer, contentType}))
-            .on("error", callback)
+        .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
+        .on("file", meta => contentType = meta.contentType)
+        .on("end", () => callback(null, { buffer, contentType }))
+        .on("error", callback)
 })
 
-const minify = imageminJpegtran();
+const minify = imageminMozjpeg({ quality: constants.JPEG_QUALITY });
 
 module.exports = () => {
     pmongodb.connect(constants.MONGO_URI)
-        .then(db => new mongodb.GridFSBucket(db, {bucketName: "marketgoods"}))
+        .then(db => new mongodb.GridFSBucket(db, { bucketName: "marketgoods" }))
         .then(bucket => {
-            if (!fs.existsSync(constants.FILE_DIR)){
-                fs.mkdirSync(constants.FILE_DIR);
-            }
+            const generate = (params, filePath) => {
+                let {id, width, height, mode} = params;
 
-            const generate = (id, width, height, filePath) => (
-                download(bucket, id)
-                    .then(resize(width, height))
+                return download(bucket, id)
+                    .then(resize(width, height, mode))
                     .then(minify)
                     .then(buf => pfs.writeFile(filePath, buf))
-            )
+            }
 
             let inprogress = new Set();
 
-            process.on("message", msg => {
-                console.log(msg)
-
-                let {id, width, height} = msg;
-                let fileName = share.getFileName(msg);
+            process.on("message", params => {
+                let fileName = share.getFileName(params);
                 let filePath = share.getFilePath(fileName);
 
-                if(inprogress.has(fileName)) return;
+                if (inprogress.has(fileName)) return;
                 inprogress.add(fileName);
 
-                generate(id, width, height, filePath)
+                generate(params, filePath)
                     .then(() => {
                         inprogress.delete(fileName);
-                        console.log(`Image ${fileName} generated`);
+                        console.log(`[Generator Worker #${cluster.worker.id}] Image ${fileName} generated`);
 
-                        msg.success = true; 
-                        process.send(msg);
+                        params.success = true;
+                        process.send(params);
                     })
                     .catch(err => {
                         inprogress.delete(fileName)
-                        console.log(`Fail to generate image ${fileName}`, err)
+                        console.log(`[Generator Worker #${cluster.worker.id}] Fail to generate image ${fileName}`, err)
 
-                        msg.success = false; 
-                        process.send(msg);
+                        params.success = false;
+                        process.send(params);
                     })
 
             });
         })
-        .then(() => console.log(`Worker #${cluster.worker.id} started`))
-        .catch(err => console.log("Fail to start worker", err))
+        .then(() => console.log(`Generator Worker #${cluster.worker.id} started`))
+        .catch(err => console.log(`Fail to start worker #${cluster.worker.id}`, err))
 }

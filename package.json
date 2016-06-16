@@ -4,14 +4,15 @@
   "description": "Frontend for gridfs that download, resize and optimize jpeg, png, anf gif images",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "imagemin-jpegtran": "^5.0.2",
-    "lwip": "0.0.9",
+    "gm": "^1.22.0",
+    "imagemin-mozjpeg": "^6.0.0",
     "mongodb": "^2.1.18",
-    "pify": "^2.3.0"
+    "pify": "^2.3.0",
+    "stream-buffers": "^3.0.0"
   }
 }

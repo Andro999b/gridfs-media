@@ -28,23 +28,28 @@ const conver = (width, height, operation) => {
         image.size((err, size) => {
             if (err) { callback(err); return; }
 
+            image.background("white").flatten()
+
             let iw = size.width, ih = size.height;
+            let vertical = iw < ih;
             switch (operation) {
                 case "c": {//crop
-                    let vertical = iw < ih;
-                    let scale = iw < ih ? width / iw : height / ih;
-                    image.scale(iw * scale, ih * scale);
-                    if (!vertical) image.gravity("Center")
-                    image.crop(width, height);
+                    if(vertical) {
+                        let scale = iw > width ? height / ih : width / iw;
+                        image.scale(iw * scale, ih * scale).crop(width, height);
+                    } else {
+                        let scale = ih > height ? width / iw :  height / ih; 
+                        image.scale(iw * scale, ih * scale).gravity("Center").crop(width, height);
+                    }
                     break;
                 }
                 case "s"://scale
                 default: {
-                    image.resize(width, height)
+                    image.resize(width, height);
                 }
             }
 
-            image.quality(100).toBuffer("JPEG", callback);
+            image.noProfile().toBuffer("JPEG", callback);
         })
     })
 }

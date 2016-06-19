@@ -48,7 +48,7 @@ const conver = (width, height, operation) => {
                 switch (operation) {
                     case "c": return crop(image);
                     case "s"://scale
-                    default: return thumb(iamge);
+                    default: return thumb(image);
                 }
             })
             .then(image => 

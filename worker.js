@@ -1,62 +1,12 @@
 const cluster = require('cluster');
 const fs = require('fs');
-const gm = require('gm');
 const mongodb = require("mongodb");
 const pify = require("pify");
 const imageminMozjpeg = require('imagemin-mozjpeg');
 
 const share = require("./share");
 const constants = require("./consts");
-
-//conver image
-const conver = (width, height, operation) => {
-    //remove aplha channel
-    const removeAplha = image => image.background("white").flatten();
-
-    //nice crop
-    const crop = image => new Promise((resolve) => {
-        image.size((err, size) => {
-            if(err) throw err;
-
-            let iw = size.width, ih = size.height;
-            let scale = Math.max(width / iw, height / ih)
-            
-            image.scale(iw * scale, ih * scale)
-            if(iw > ih) image.gravity("Center");
-            image.crop(width, height);
-
-            resolve(image)
-        })
-    })
-
-    //recate thumbnail(fast)
-    const thumb = (image) => image.thumbnail(width, height).quality(100);
-
-    return pify((data, callback) => {
-        let type = null;
-        let {buffer, contentType} = data;
-
-        switch (contentType) {
-            case "image/jpeg": type = "jpg"; break;
-            case "image/png": type = "png"; break;
-            case "image/gif": type = "gif"; break;
-        }
-
-        Promise.resolve(gm(buffer, `image.${type}`))
-            .then(removeAplha)
-            .then(image => {
-                switch (operation) {
-                    case "c": return crop(image);
-                    case "s"://scale
-                    default: return thumb(image);
-                }
-            })
-            .then(image => 
-                image.noProfile().toBuffer("JPEG", callback)
-            )
-            .catch(callback);
-    })
-}
+const conver = require("./convert");
 
 //down load from gridfs
 const download = pify(function (bucket, id, callback) {

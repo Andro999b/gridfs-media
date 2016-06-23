@@ -12,7 +12,7 @@ const accetebleSizes = accetebleSizesStr.split(",").map(size => {
 
 module.exports = {
     FILE_DIR: './files',
-    MONGO_URI: process.env.MONGO_URI || 'mongodb://192.168.4.218/lardi_files',//'mongodb://172.16.2.2:27017/lardi_files',
+    MONGO_URI: process.env.MONGO_URI || 'mongodb://172.16.2.2:27017/lardi_files',//'mongodb://192.168.4.218/lardi_files'
     BACKET_NAME: process.env.GRIDFS_BACKET || "marketgoods",
     CACHE_CONTROL: `max-age=${7 * 24 * 3600}, public`,
     JPEG_QUALITY:  process.env.JPEG_QUALITY || 90,

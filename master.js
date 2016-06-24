@@ -101,7 +101,7 @@ module.exports = () => {
         //if request timed out stop wait generation finish
         req.setTimeout(constants.REQUEST_TIMEOUT, () => generator.removeListener('message', onFileGenerated))
     });
-    server.listen(8090)
+    server.listen(8080)
     //errors
     server.on('error', console.log)
 }

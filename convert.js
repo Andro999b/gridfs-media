@@ -29,7 +29,9 @@ module.exports = (width, height, operation) => {
                 image.resize(width, height).quality(100);
             } else { // horizontal
                 let scale = height / ih;
-                image.scale(iw * scale, ih * scale).crop(width, height)
+                image.scale(iw * scale, ih * scale)
+                    .gravity("Center")
+                    .crop(width, height)
             }
 
             resolve(image)

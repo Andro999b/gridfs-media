@@ -39,7 +39,8 @@ const startGenerationQueue = bucket => {
 
                 return  () => {
                     console.log(msg)
-                    inprogress.delete(fileName);
+                    console.log(`[Generator Worker] generation queue size: ${queue.length}. Active processes: ${activeCount}`);
+                    inprogress.delete(params.fileName);
                     params.success = success;
                     process.send(params);
                     activeCount--;
@@ -60,8 +61,10 @@ const startGenerationQueue = bucket => {
                 let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
                 let start = Date.now();
-
                 activeCount++;
+
+                
+                
                 generate(params, filePath)
                     .then(generationFinish(params, start, true))
                     .catch(err => {
@@ -77,6 +80,7 @@ const startGenerationQueue = bucket => {
                 inprogress.add(params.fileName);
 
                 queue.push(params);
+                console.log(`[Generator Worker] Image ${params.fileName} enqueued. Generation queue size: ${queue.length}`);
                 next();
             });
         }

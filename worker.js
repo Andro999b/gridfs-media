@@ -32,10 +32,10 @@ const startGenerationQueue = bucket => {
             }
 
             //generation finish
-            const generationFinish = (params, fileName, success) => {
+            const generationFinish = (params, start, success) => {
                 let msg =  success ? 
-                    `[Generator Worker] Image ${fileName} generated` :
-                    `[Generator Worker] Fail to generate image ${fileName}`;
+                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms` :
+                    `[Generator Worker] Fail to generate image ${params.fileName}`;
 
                 return  () => {
                     console.log(msg)
@@ -59,12 +59,13 @@ const startGenerationQueue = bucket => {
                 let params = queue.pop();
                 let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
+                let start = Date.now();
 
                 activeCount++;
                 generate(params, filePath)
-                    .then(generationFinish(params, fileName, true))
+                    .then(generationFinish(params, start, true))
                     .catch(err => {
-                        generationFinish(params, fileName, false)();
+                        generationFinish(params, start, false)();
                         console.log(err);
                     })
             }

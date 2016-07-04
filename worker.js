@@ -33,13 +33,13 @@ const startGenerationQueue = bucket => {
 
             //generation finish
             const generationFinish = (params, start, success) => {
-                let msg =  success ? 
-                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms` :
+                return  () => {
+                    let msg =  success ? 
+                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms.
+                             Queue size: ${queue.length}. Active processes: ${activeCount}` :
                     `[Generator Worker] Fail to generate image ${params.fileName}`;
 
-                return  () => {
                     console.log(msg)
-                    console.log(`[Generator Worker] generation queue size: ${queue.length}. Active processes: ${activeCount}`);
                     inprogress.delete(params.fileName);
                     params.success = success;
                     process.send(params);

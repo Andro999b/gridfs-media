@@ -35,8 +35,8 @@ const startGenerationQueue = bucket => {
             const generationFinish = (params, start, success) => {
                 return  () => {
                     let msg =  success ? 
-                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms.
-                             Queue size: ${queue.length}. Active processes: ${activeCount}` :
+                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms. \
+                    Queue size: ${queue.length}. Active processes: ${activeCount}` :
                     `[Generator Worker] Fail to generate image ${params.fileName}`;
 
                     console.log(msg)

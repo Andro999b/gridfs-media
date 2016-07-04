@@ -83,7 +83,7 @@ const startGenerationQueue = bucket => {
                 inprogress.add(params.fileName);
 
                 queue.push(params);
-                console.log(`[Generator Worker] Image ${params.fileName} enqueued. Generation queue size: ${queue.length}`);
+                console.log(`[Generator Worker] Image ${params.fileName} enqueued. Queue size: ${queue.length}. Active processes: ${activeCount}`);
                 next();
             });
         }

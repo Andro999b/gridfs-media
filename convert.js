@@ -29,7 +29,7 @@ module.exports = (width, height, operation) => {
     const makeNice = image => new Promise((resolve) => {
         image.size((err, size) => {
             if(err) throw err;
-
+            
             let iw = size.width, ih = size.height;
             if(iw < ih) { //vetical
                 image.resize(width, height);
@@ -70,7 +70,6 @@ module.exports = (width, height, operation) => {
             })
             .then(image => 
                 image
-                    .filter("Point")
                     .quality(constants.JPEG_QUALITY)
                     .noProfile()
                     .toBuffer("JPEG", callback)

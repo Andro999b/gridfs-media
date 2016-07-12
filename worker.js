@@ -15,7 +15,10 @@ const download = pify(function (bucket, id, callback) {
         .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
         .on("file", meta => contentType = meta.contentType)
         .on("end", () => callback(null, { buffer, contentType }))
-        .on("error", callback)
+        .on("error", (err) => {
+            console.log("GridFS error:", err);
+            return callback
+        })
 })
 
 const minify = optimazer({ progressive: true});

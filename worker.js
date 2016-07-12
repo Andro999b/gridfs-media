@@ -11,14 +11,12 @@ const conver = require("./convert");
 //down load from gridfs
 const download = pify(function (bucket, id, callback) {
     let contentType, buffer;
+    console.log(`start donwload ${id}`);
     bucket.openDownloadStream(mongodb.ObjectId(id))
         .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
-        .on("file", meta => contentType = meta.contentType)
-        .on("end", () => callback(null, { buffer, contentType }))
-        .on("error", (err) => {
-            console.log("GridFS error:", err);
-            return callback
-        })
+        .on("file", meta => {console.log(`contentType of ${id} is ${meta.contentType}`); contentType = meta.contentType})
+        .on("end", () => {console.log(`finish donwload ${id}`); callback(null, { buffer, contentType })})
+        .on("error", callback)
 })
 
 const minify = optimazer({ progressive: true});

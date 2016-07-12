@@ -2,7 +2,7 @@ const cluster = require('cluster');
 const fs = require('fs');
 const mongodb = require("mongodb");
 const pify = require("pify");
-const imageminMozjpeg = require('imagemin-mozjpeg');
+const optimazer = require('imagemin-jpegtran');
 
 const share = require("./share");
 const constants = require("./consts");
@@ -18,7 +18,7 @@ const download = pify(function (bucket, id, callback) {
         .on("error", callback)
 })
 
-const minify = imageminMozjpeg({ quality: constants.JPEG_QUALITY });
+const minify = optimazer({ progressive: true});
 
 const startGenerationQueue = bucket => {
             //generation task

@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "gm": "^1.22.0",
-    "imagemin-mozjpeg": "^6.0.0",
+    "imagemin-jpegtran": "^5.0.2",
     "mongodb": "^2.1.18",
     "pify": "^2.3.0",
     "stream-buffers": "^3.0.0"

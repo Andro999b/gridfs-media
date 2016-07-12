@@ -11,17 +11,10 @@ const conver = require("./convert");
 //down load from gridfs
 const download = pify(function (bucket, id, callback) {
     let contentType, buffer;
-    const watchDog = setTimeout(() => {
-        callback("Download reseted by watch dog timer :(");
-    }, 30000);//sometimes gridfs "stuck"
-
     bucket.openDownloadStream(mongodb.ObjectId(id))
         .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
         .on("file", meta => contentType = meta.contentType)
-        .on("end", () => {
-            clearTimeout(watchDog);
-            callback(null, { buffer, contentType })
-        })
+        .on("end", () => callback(null, { buffer, contentType }))
         .on("error", callback)
 })
 
@@ -66,7 +59,7 @@ const startGenerationQueue = bucket => {
                     const download = params.ts.download_end - params.ts.start;
                     const convert = params.ts.convert_end - params.ts.download_end;
                     const minify = params.ts.minify_end - params.ts.convert_end;
-                    const store = params.ts.store_end - params.ts.convert_end;
+                    const store = params.ts.store_end - params.ts.minify_end;
                     const size = Math.ceil(params.fileSize / 1024);
 
                     let msg =  success ? 

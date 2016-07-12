@@ -17,7 +17,7 @@ module.exports = {
     BACKET_NAME: process.env.GRIDFS_BACKET || "marketgoods",
     CACHE_CONTROL: `max-age=${7 * 24 * 3600}, public`,
     JPEG_QUALITY:  process.env.JPEG_QUALITY || 90,
-    REQUEST_TIMEOUT: process.env.REQUEST_TIMEOUT || 12000,
+    REQUEST_TIMEOUT: process.env.REQUEST_TIMEOUT || 6000,
     ACCEPTEBLE_SIZES: accetebleSizes,
     PARALLEL_GENERATION_COUNT: process.env.PARALLEL_GENERATION_COUNT || 4
 }

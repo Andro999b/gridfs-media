@@ -11,8 +11,7 @@
   "dependencies": {
     "gm": "^1.22.0",
     "imagemin-jpegtran": "^5.0.2",
-    "mongodb": "^2.1.18",
-    "pify": "^2.3.0",
-    "stream-buffers": "^3.0.0"
+    "mongodb": "^2.2.1",
+    "pify": "^2.3.0"
   }
 }

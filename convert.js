@@ -46,7 +46,7 @@ module.exports = (width, height, operation) => {
     
 
     //recate thumbnail(fast)
-    const thumb = (image) => image.thumbnail(width, height).quality(constants.JPEG_QUALITY);
+    const thumb = (image) => image.thumbnail(width, height);
 
     return pify((data, callback) => {
         let type = null;
@@ -70,7 +70,7 @@ module.exports = (width, height, operation) => {
                 }
             })
             .then(image => 
-                image.noProfile().toBuffer("JPEG", callback)
+                image.quality(constants.JPEG_QUALITY).noProfile().toBuffer("JPEG", callback)
             )
             .catch(callback);
     })

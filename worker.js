@@ -26,6 +26,11 @@ const startGenerationQueue = bucket => {
                 return arg
             }
 
+            const detectSize = (params) => (arg) => {
+                params.fileSize = arg.buffer.length;
+                return arg;
+            }
+
             //generation task
             const generate = (params, filePath) => {
                 let {id, width, height, operation} = params;
@@ -34,6 +39,7 @@ const startGenerationQueue = bucket => {
                 ts(params, "start")();
 
                 return download(bucket, id)
+                    .then(detectSize(params))
                     .then(ts(params, "download_end"))
                     .then(conver(width, height, operation))
                     .then(ts(params, "convert_end"))
@@ -54,9 +60,10 @@ const startGenerationQueue = bucket => {
                     const convert = params.ts.convert_end - params.ts.download_end;
                     const minify = params.ts.minify_end - params.ts.convert_end;
                     const store = params.ts.store_end - params.ts.convert_end;
+                    const size = Math.ceil(params.fileSize / 1024);
 
                     let msg =  success ? 
-                    `[Generator Worker] Image ${params.fileName} generated in ${total} ms(download: ${download} ms, convert ${convert} ms, minify: ${minify} ms, store ${store})` + 
+                    `[Generator Worker] Image ${params.fileName} (${size}kb) generated in ${total} ms(download: ${download}, convert ${convert}, minify: ${minify}, store: ${store})` + 
                     ` Queue size: ${queue.length}. Active processes: ${activeCount}` :
                     `[Generator Worker] Fail to generate image ${params.fileName}`;
 

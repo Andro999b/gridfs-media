@@ -11,6 +11,7 @@ const accetebleSizes = accetebleSizesStr.split(",").map(size => {
 }).filter(val => val !== null)
 
 module.exports = {
+    SERVER_PORT: process.env.SERVER_PORT || 8080, 
     FILE_DIR: './files',
     MONGO_URI: process.env.MONGO_URI || 'mongodb://192.168.4.218/lardi_files?', //'mongodb://172.16.2.2:27017/lardi_files'
     BACKET_NAME: process.env.GRIDFS_BACKET || "marketgoods",

@@ -63,7 +63,7 @@ const startGenerationQueue = bucket => {
                     const size = Math.ceil(params.fileSize / 1024);
 
                     let msg =  success ? 
-                    `[Generator Worker] Image ${params.fileName} (${size}kb) generated in ${total} ms(download: ${download}, convert ${convert}, minify: ${minify}, store: ${store})` + 
+                    `[Generator Worker] Image ${params.fileName} generated in ${total} ms(download ${size}kb: ${download}, convert ${convert}, minify: ${minify}, store: ${store})` + 
                     ` Queue size: ${queue.length}. Active processes: ${activeCount}` :
                     `[Generator Worker] Fail to generate image ${params.fileName}`;
 

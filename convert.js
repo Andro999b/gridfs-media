@@ -44,9 +44,8 @@ module.exports = (width, height, operation) => {
         })
     })
     
-
     //recate thumbnail(fast)
-    const thumb = (image) => image.thumbnail(width, height);
+    const thumb = image => image.thumbnail(width, height);
 
     return pify((data, callback) => {
         let type = null;
@@ -70,7 +69,11 @@ module.exports = (width, height, operation) => {
                 }
             })
             .then(image => 
-                image.quality(constants.JPEG_QUALITY).noProfile().toBuffer("JPEG", callback)
+                image
+                    .filter("Gaussian")
+                    .quality(constants.JPEG_QUALITY)
+                    .noProfile()
+                    .toBuffer("JPEG", callback)
             )
             .catch(callback);
     })

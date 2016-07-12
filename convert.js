@@ -70,7 +70,6 @@ module.exports = (width, height, operation) => {
             })
             .then(image => 
                 image
-                    .filter("Gaussian")
                     .quality(constants.JPEG_QUALITY)
                     .noProfile()
                     .toBuffer("JPEG", callback)

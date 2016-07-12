@@ -14,7 +14,7 @@ const download = pify(function (bucket, id, callback) {
     bucket.openDownloadStream(mongodb.ObjectId(id))
         .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
         .on("file", meta => contentType = meta.contentType)
-        .on("close", () => callback(null, { buffer, contentType }))
+        .on("end", () => callback(null, { buffer, contentType }))
         .on("error", callback)
 })
 

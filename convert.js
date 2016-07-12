@@ -44,7 +44,7 @@ module.exports = (width, height, operation) => {
         })
     })
     
-    //recate thumbnail(fast)
+    //crecate thumbnail(fast)
     const thumb = image => image.thumbnail(width, height);
 
     return pify((data, callback) => {

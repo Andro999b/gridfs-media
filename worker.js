@@ -17,6 +17,7 @@ const download = pify(function (bucket, id, callback) {
         .on("file", meta => {console.log(`contentType of ${id} is ${meta.contentType}`); contentType = meta.contentType})
         .on("end", () => {console.log(`finish donwload ${id}`); callback(null, { buffer, contentType })})
         .on("error", callback)
+        .on("close", data => callback("Download stream unexpected closed:" + data))
 })
 
 const minify = optimazer({ progressive: true});

@@ -70,6 +70,7 @@ module.exports = (width, height, operation) => {
             })
             .then(image => 
                 image
+                    .filter("Point")
                     .quality(constants.JPEG_QUALITY)
                     .noProfile()
                     .toBuffer("JPEG", callback)

@@ -2,6 +2,9 @@ const gm = require('gm');
 const pify = require("pify");
 
 module.exports = (width, height, operation) => {
+    //auto rotate by EXIF
+    const rotate = image => image.autoOrient()
+
     //remove aplha channel
     const removeAplha = image => image.background("white").flatten();
 
@@ -55,6 +58,7 @@ module.exports = (width, height, operation) => {
         }
 
         Promise.resolve(gm(buffer, `image.${type}`))
+            .then(rotate)
             .then(removeAplha)
             .then(image => {
                 switch (operation) {

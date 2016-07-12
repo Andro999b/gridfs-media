@@ -32,17 +32,21 @@ const startGenerationQueue = bucket => {
             }
 
             //generation finish
-            const generationFinish = (params, fileName, success) => {
-                let msg =  success ? 
-                    `[Generator Worker] Image ${fileName} generated` :
-                    `[Generator Worker] Fail to generate image ${fileName}`;
-
+            const generationFinish = (params, start, success) => {
                 return  () => {
+                    activeCount--;
+                    inprogress.delete(params.fileName);
+
+                    let msg =  success ? 
+                    `[Generator Worker] Image ${params.fileName} generated in ${Date.now() - start} ms.` + 
+                    ` Queue size: ${queue.length}. Active processes: ${activeCount}` :
+                    `[Generator Worker] Fail to generate image ${params.fileName}`;
+
                     console.log(msg)
-                    inprogress.delete(fileName);
+
                     params.success = success;
                     process.send(params);
-                    activeCount--;
+                    
                     next();
                 }
             }
@@ -59,12 +63,15 @@ const startGenerationQueue = bucket => {
                 let params = queue.pop();
                 let fileName = params.fileName;
                 let filePath = share.getFilePath(fileName);
-
+                let start = Date.now();
                 activeCount++;
+
+                
+                
                 generate(params, filePath)
-                    .then(generationFinish(params, fileName, true))
+                    .then(generationFinish(params, start, true))
                     .catch(err => {
-                        generationFinish(params, fileName, false)();
+                        generationFinish(params, start, false)();
                         console.log(err);
                     })
             }
@@ -76,6 +83,7 @@ const startGenerationQueue = bucket => {
                 inprogress.add(params.fileName);
 
                 queue.push(params);
+                console.log(`[Generator Worker] Image ${params.fileName} enqueued. Queue size: ${queue.length}. Active processes: ${activeCount}`);
                 next();
             });
         }

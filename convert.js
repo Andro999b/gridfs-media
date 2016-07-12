@@ -1,5 +1,6 @@
 const gm = require('gm');
 const pify = require("pify");
+const constants = require("./consts");
 
 module.exports = (width, height, operation) => {
     //auto rotate by EXIF
@@ -31,7 +32,7 @@ module.exports = (width, height, operation) => {
 
             let iw = size.width, ih = size.height;
             if(iw < ih) { //vetical
-                image.resize(width, height).quality(100);
+                image.resize(width, height);
             } else { // horizontal
                 let scale = height / ih;
                 image.scale(iw * scale, ih * scale)
@@ -45,7 +46,7 @@ module.exports = (width, height, operation) => {
     
 
     //recate thumbnail(fast)
-    const thumb = (image) => image.thumbnail(width, height).quality(100);
+    const thumb = (image) => image.thumbnail(width, height).quality(constants.JPEG_QUALITY);
 
     return pify((data, callback) => {
         let type = null;

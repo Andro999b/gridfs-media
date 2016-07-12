@@ -28,8 +28,6 @@ const download = pify(function (bucket, id, callback) {
 const minify = optimazer({ progressive: true});
 
 const startGenerationQueue = bucket => {
-            mongodb.Logger.setLevel('info');
-
             const ts = (params, metric) => (arg) => {
                 params.ts[metric] = Date.now();
                 return arg

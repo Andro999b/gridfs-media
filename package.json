@@ -9,9 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "execa": "^0.4.0",
     "gm": "^1.22.0",
-    "imagemin-mozjpeg": "^6.0.0",
     "mongodb": "^2.2.1",
+    "mozjpeg": "^4.1.1",
     "pify": "^2.3.0"
   }
 }

@@ -1,9 +1,9 @@
 const cluster = require("cluster");
-const worker = require("./worker");
+const generator = require("./generator");
 const master = require("./master");
 
 if(cluster.isMaster){
     master();
 }else {
-    worker();
+    generator();
 }

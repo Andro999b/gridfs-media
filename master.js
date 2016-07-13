@@ -6,14 +6,16 @@ const pify = require("pify");
 const share = require("./share");
 const constants = require("./consts");
 
-const numCPUs = require('os').cpus().length;
-
 const pfs = pify(fs);
 
 module.exports = () => {
     //create file directory if not exists
     if (!fs.existsSync(constants.FILE_DIR)){
         fs.mkdirSync(constants.FILE_DIR);
+    }
+
+    if (!fs.existsSync(constants.TMP_FILE_DIR)){
+        fs.mkdirSync(constants.TMP_FILE_DIR);
     }
 
     //start workers

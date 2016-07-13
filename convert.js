@@ -45,12 +45,13 @@ module.exports = (width, height, operation) => {
         })
     })
     
-    //crecate thumbnail(fast)
+    //create thumbnail(fast)
     const thumb = image => image.thumbnail(width, height);
 
     return pify((data, callback) => {
         let type = null;
-        let {buffer, contentType} = data;
+        let {filename, contentType} = data;
+        let outFilename = filename + "-converted.jpg";
 
         switch (contentType) {
             case "image/jpeg": type = "jpg"; break;
@@ -58,7 +59,7 @@ module.exports = (width, height, operation) => {
             case "image/gif": type = "gif"; break;
         }
 
-        Promise.resolve(gm(buffer, `image.${type}`))
+        Promise.resolve(gm(filename))
             .then(rotate)
             .then(removeAplha)
             .then(image => {
@@ -72,7 +73,13 @@ module.exports = (width, height, operation) => {
             .then(image => 
                 image
                     .noProfile()
-                    .toBuffer("JPEG", callback)
+                    .write(outFilename, err => {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+                        callback(null, {filename: outFilename})
+                    })
             )
             .catch(callback);
     })

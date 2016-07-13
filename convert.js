@@ -1,8 +1,6 @@
 const gm = require('gm');
 const pify = require("pify");
 
-const streamBuffers = require('stream-buffers');
-
 const constants = require("./consts");
 
 module.exports = (width, height, operation) => {

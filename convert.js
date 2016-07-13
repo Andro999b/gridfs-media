@@ -1,5 +1,8 @@
 const gm = require('gm');
 const pify = require("pify");
+
+const streamBuffers = require('stream-buffers');
+
 const constants = require("./consts");
 
 module.exports = (width, height, operation) => {
@@ -68,12 +71,19 @@ module.exports = (width, height, operation) => {
                     default: return thumb(image);
                 }
             })
-            .then(image => 
-                image
-                    .quality(constants.JPEG_QUALITY)
+            .then(image => {
+                let stream = image
                     .noProfile()
-                    .toBuffer("JPEG", callback)
-            )
+                    .stream("JPEG")
+                
+                let buffer = new streamBuffers.ReadableStreamBuffer()
+                stream.on("data", chunk => buffer.put(chunk))
+                stream.on("end", () => buffer.stop())
+
+                console.log(Buffer.isBuffer(buffer))
+
+                callback(null, buffer)
+            })
             .catch(callback);
     })
 }

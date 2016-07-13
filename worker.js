@@ -2,7 +2,7 @@ const cluster = require('cluster');
 const fs = require('fs');
 const mongodb = require("mongodb");
 const pify = require("pify");
-const optimazer = require('imagemin-jpegtran');
+const mozjpeg = require('imagemin-mozjpeg');
 
 const share = require("./share");
 const constants = require("./consts");
@@ -10,15 +10,15 @@ const conver = require("./convert");
 
 //down load from gridfs
 const download = pify(function (bucket, id, callback) {
-    let contentType, buffer;
+    let contentType, bufs = [];
     bucket.openDownloadStream(mongodb.ObjectId(id))
-        .on("data", chunk => buffer = buffer ? Buffer.concat([buffer, chunk]) : chunk)
+        .on("data", chunk => bufs.push(chunk))
         .on("file", meta => contentType = meta.contentType)
-        .on("end", () => callback(null, { buffer, contentType }))
+        .on("end", () => callback(null, { buffer: Buffer.concat(bufs), contentType }))
         .on("error", callback)
 })
 
-const minify = optimazer({ progressive: true});
+const minify = mozjpeg({quality: constants.JPEG_QUALITY});
 
 const startGenerationQueue = bucket => {
             const ts = (params, metric) => (arg) => {

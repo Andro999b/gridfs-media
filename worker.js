@@ -18,7 +18,7 @@ const download = pify(function (bucket, id, callback) {
         .on("error", callback)
 })
 
-const minify = mozjpeg({quality: constants.JPEG_QUALITY, progressive: false});
+const minify = mozjpeg({quality: constants.JPEG_QUALITY});
 
 const startGenerationQueue = bucket => {
             const ts = (params, metric) => (arg) => {

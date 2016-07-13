@@ -49,16 +49,8 @@ module.exports = (width, height, operation) => {
     //create thumbnail(fast)
     const thumb = image => image.thumbnail(width, height);
 
-    return pify((data, callback) => {
-        let type = null;
-        let {filename, contentType} = data;
+    return pify(({filename}, callback) => {
         let outFilename = tempfile(".jpg");
-
-        switch (contentType) {
-            case "image/jpeg": type = "jpg"; break;
-            case "image/png": type = "png"; break;
-            case "image/gif": type = "gif"; break;
-        }
 
         Promise.resolve(gm(filename))
             .then(rotate)

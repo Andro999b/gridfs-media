@@ -1,5 +1,6 @@
 const gm = require('gm');
 const pify = require("pify");
+const tempfile = require("tempfile")
 
 const constants = require("./consts");
 

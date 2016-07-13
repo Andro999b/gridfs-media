@@ -51,7 +51,7 @@ module.exports = (width, height, operation) => {
     return pify((data, callback) => {
         let type = null;
         let {filename, contentType} = data;
-        let outFilename = filename + "-converted.jpg";
+        let outFilename = tempfile(".jpg");
 
         switch (contentType) {
             case "image/jpeg": type = "jpg"; break;

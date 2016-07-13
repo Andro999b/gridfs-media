@@ -2,6 +2,7 @@ const cluster = require('cluster');
 const fs = require('fs');
 const mongodb = require("mongodb");
 const pify = require("pify");
+const tempfile = require("tempfile")
 
 const share = require("./share");
 const constants = require("./consts");
@@ -9,9 +10,10 @@ const conver = require("./convert");
 const minify = require("./minify");
 
 //down load from gridfs
-const download = pify(function (bucket, id, filename, callback) {
+const download = pify(function (bucket, id, callback) {
     let contentType, size;
-    let ws = fs.createWriteStream(filename)
+    const filename = tempfile();
+    const ws = fs.createWriteStream(filename)
 
     bucket.openDownloadStream(mongodb.ObjectId(id))
         .on("file", meta => {size = meta.length; contentType = meta.contentType})
@@ -36,13 +38,12 @@ const startGenerationQueue = bucket => {
 
             //generation task
             const generate = (context, filePath) => {
-                let tempfile = share.getTempFile(activeCount);
                 let {id, width, height, operation} = context;
 
                 context.ts = {}; //timestamps
                 ts(context, "start")();
 
-                return download(bucket, id, tempfile)
+                return download(bucket, id)
                     .then(detectSize(context))
                     .then(ts(context, "download_end"))
                     .then(conver(width, height, operation))

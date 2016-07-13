@@ -14,10 +14,6 @@ module.exports = () => {
         fs.mkdirSync(constants.FILE_DIR);
     }
 
-    if (!fs.existsSync(constants.TMP_FILE_DIR)){
-        fs.mkdirSync(constants.TMP_FILE_DIR);
-    }
-
     //start workers
     let generator;
     const spawnGenerator = () => {

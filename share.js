@@ -3,7 +3,6 @@ const constants = require("./consts");
 const urlMatcher = /([\w\d]{24})_(\d{2,4})x(\d{2,4})(\w?).jpg/
 
 module.exports = {
-    getTempFile: num => `${constants.TMP_FILE_DIR}/tmp${num}`,
     getFileName: params => `${params.id}_${params.width}x${params.height}${params.operation}.jpg`,
     getFilePath: fileName => `${constants.FILE_DIR}/${fileName}`,
     parseUrl: url => {

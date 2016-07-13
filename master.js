@@ -48,7 +48,8 @@ module.exports = () => {
 
                     //send 200
                     res.writeHead(200, {
-                        'Content-Type': 'image/jpeg',
+                        'Accept-Ranges': 'bytes',
+                        'Content-Type': 'image/jpeg;charset=UTF-8',
                         'Content-Length': stat.size,
                         'Cache-Control' : constants.CACHE_CONTROL,
                         'Last-Modified': lastModified

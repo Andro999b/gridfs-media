@@ -69,19 +69,11 @@ module.exports = (width, height, operation) => {
                     default: return thumb(image);
                 }
             })
-            .then(image => {
-                let stream = image
+            .then(image => 
+                image
                     .noProfile()
-                    .stream("JPEG")
-                
-                let buffer = new streamBuffers.ReadableStreamBuffer()
-                stream.on("data", chunk => buffer.put(chunk))
-                stream.on("end", () => buffer.stop())
-
-                console.log(Buffer.isBuffer(buffer))
-
-                callback(null, buffer)
-            })
+                    .toBuffer("JPEG", callback)
+            )
             .catch(callback);
     })
 }

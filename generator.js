@@ -2,7 +2,6 @@ const cluster = require('cluster');
 const fs = require('fs');
 const mongodb = require("mongodb");
 const pify = require("pify");
-const tempfile = require("tempfile")
 
 const share = require("./share");
 const constants = require("./consts");
@@ -121,8 +120,8 @@ const startGenerationQueue = bucket => {
                 .generate(context, filePath)
                 .then(() => finish(true))
                 .catch(err => {
-                    finish(false);
                     console.log(err);
+                    finish(false);
                 })
         }
 
@@ -151,7 +150,7 @@ const startGenerationQueue = bucket => {
         }
     }
 
-    const queue = new ProcessQueue(process.send)
+    const queue = new ProcessQueue((params) => process.send(params))
     process.on("message", (params) => queue.enqueue(params));
 }
 

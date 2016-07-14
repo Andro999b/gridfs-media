@@ -1,6 +1,5 @@
 const gm = require('gm');
 const pify = require("pify");
-const tempfile = require("tempfile")
 
 const constants = require("./consts");
 
@@ -50,7 +49,7 @@ module.exports = (width, height, operation) => {
     const thumb = image => image.thumbnail(width, height);
 
     return pify(({filename}, callback) => {
-        let outFilename = tempfile(".jpg");
+        let outFilename = `${filename}-converted.jpg`;
 
         Promise.resolve(gm(filename))
             .then(rotate)

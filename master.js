@@ -14,6 +14,10 @@ module.exports = () => {
         fs.mkdirSync(constants.FILE_DIR);
     }
 
+    if (!fs.existsSync(constants.TEMP_DIR)){
+        fs.mkdirSync(constants.TEMP_DIR);
+    }
+
     //start workers
     let generator;
     const spawnGenerator = () => {
@@ -21,7 +25,7 @@ module.exports = () => {
         generator.setMaxListeners(100);
         generator.on('error', err => console.log('Generator Fail: ', err))
         generator.on('exit', (worker, code, signal) => {
-            console.log('Generator died :(. Okay lets spawn new', code, signal)
+            console.log('Generator died :(. Okay lets spawn new')
             spawnGenerator();
         })
     }

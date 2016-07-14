@@ -1,3 +1,5 @@
+const numCPUs = require('os').cpus().length;
+
 const accetebleSizesStr = process.env.ACCEPTEBLE_SIZES || "60x40,400x262,1230x750"
 const accetebleSizes = accetebleSizesStr.split(",").map(size => {
     let wh = size.split("x")
@@ -12,7 +14,7 @@ const accetebleSizes = accetebleSizesStr.split(",").map(size => {
 
 module.exports = {
     SERVER_PORT: parseInt(process.env.SERVER_PORT) || 8080,
-    TMP_FILE_DIR: './tmp', 
+    TEMP_DIR: './temp', 
     FILE_DIR: './files',
     MONGO_URI: process.env.MONGO_URI || 'mongodb://192.168.4.218/lardi_files?', //'mongodb://172.16.2.2:27017/lardi_files'
     BACKET_NAME: process.env.GRIDFS_BACKET || "marketgoods",
@@ -20,5 +22,5 @@ module.exports = {
     JPEG_QUALITY:  process.env.JPEG_QUALITY || 90,
     REQUEST_TIMEOUT: process.env.REQUEST_TIMEOUT || 6000,
     ACCEPTEBLE_SIZES: accetebleSizes,
-    PARALLEL_GENERATION_COUNT: process.env.PARALLEL_GENERATION_COUNT || 4
+    PARALLEL_GENERATION_COUNT: process.env.PARALLEL_GENERATION_COUNT || numCPUs
 }

@@ -47,7 +47,7 @@ const startGenerationQueue = bucket => {
                 return arg;
             }
 
-            const printStats = () => {
+            const printStats = arg => {
                 const ts = context.ts;
                 const total = Date.now() - ts.start;
                 const download = ts.download_end - ts.start;
@@ -55,8 +55,10 @@ const startGenerationQueue = bucket => {
                 const minify = ts.minify_end - ts.convert_end;
                 const size = Math.ceil(context.fileSize / 1024);
 
-                console.log(`[${this.processName}] Image ${context.fileName} generated in ${total} ms` +
+                console.log(`[Generator ${this.processName}] Image ${context.fileName} generated in ${total} ms` +
                     `(download ${size}kb: ${download}, convert ${convert}, minify: ${minify})`)
+
+                return arg;
             }
 
             ts(context, "start")();
@@ -115,7 +117,8 @@ const startGenerationQueue = bucket => {
 
             const finish = this._generationFinish(context, process);
 
-            process.generate(context, filePath)
+            process
+                .generate(context, filePath)
                 .then(() => finish(true))
                 .catch(err => {
                     finish(false);
@@ -128,15 +131,16 @@ const startGenerationQueue = bucket => {
             const queue = this.queue;
             const avaliableProcess = this.avaliableProcess;
             const finishCallback = this.finishCallback;
+            const inprogress = this.inprogress;
 
-            return (success) => {
+            return success => {
                 inprogress.delete(context.fileName);
                 avaliableProcess.push(process);
 
                 let msg = success ?
                     `[Generators queue] Queue size: ${queue.length}. Avalibale processes: ${avaliableProcess.length}` :
                     `[Generators queue] Fail to generate image ${context.fileName}`;
-
+                
                 console.log(msg)
 
                 context.success = success;

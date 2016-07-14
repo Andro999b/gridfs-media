@@ -1,4 +1,4 @@
-const gm = require('gm');
+const gm = require('gm').subClass({nativeAutoOrient: true});
 const pify = require("pify");
 
 const constants = require("./consts");

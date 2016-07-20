@@ -35,6 +35,7 @@ module.exports = () => {
     //start http server
     const server = http.createServer(function (req, res) {
         const sendFile = (filePath) => {
+            cleanup();
             pfs.stat(filePath)
                 .then(stat => {//prepare headers and read file(if it need)
                     let lastModified = stat.mtime.toUTCString();
@@ -65,14 +66,23 @@ module.exports = () => {
                 .catch(console.log)
         }
 
+        const sendNotAvailable = () => {
+            cleanup();
+            res.writeHead(503, {
+                'Retry-After': new Date(Date.now() + constants.RETRY_AFTER).toUTCString(),
+            })
+
+            res.end();
+        }
+
         const sendNotFound = () => {
+            cleanup();
             res.statusCode = 404;
             res.end();
         }
 
         const onFileGenerated = (msg) => {
             if(msg.fileName == imageParams.fileName) {//same as sended
-                    generator.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
                     if(msg.success)
                         sendFile(filePath);
                     else
@@ -80,7 +90,13 @@ module.exports = () => {
             }
         }
 
+        const cleanup = () => {
+            clearTimeout(generationTimeout);
+            generator.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
+        }
+
         //request process start here
+        let generationTimeout = 0;
         const imageParams = share.parseUrl(req.url);
         
         //send not found
@@ -97,12 +113,13 @@ module.exports = () => {
             if (exists) {
                 sendFile(filePath)
             } else {
+                generationTimeout = setTimeout(sendNotAvailable, constants.REQUEST_TIMEOUT)
                 generator.on("message", onFileGenerated)
                 generator.send(imageParams);
             }
         });
         //if request timed out stop wait generation finish
-        req.setTimeout(constants.REQUEST_TIMEOUT, () => generator.removeListener('message', onFileGenerated))
+        req.setTimeout(30000, cleanup)
     });
     server.listen(constants.SERVER_PORT)
     //errors

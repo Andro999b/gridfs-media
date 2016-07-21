@@ -34,6 +34,21 @@ module.exports = () => {
     
     //start http server
     const server = http.createServer(function (req, res) {
+        //request process start here
+        let generationTimeout = 0;
+        const imageParams = share.parseUrl(req.url);
+        
+        //send not found
+        if (imageParams == null || !share.isAcceptebleSize(imageParams)) {
+            sendNotFound();
+            return;
+        }
+
+        //generate file name
+        imageParams.fileName = share.getFileName(imageParams);
+
+        const filePath = share.getFilePath(imageParams.fileName);
+
         const sendFile = (filePath) => {
             cleanup();
             pfs.stat(filePath)
@@ -68,6 +83,7 @@ module.exports = () => {
 
         const sendNotAvailable = () => {
             cleanup();
+            console.log(`[Http Server] Image ${imageParams.fileName} unavailable(wait for generation finish)`)
             res.writeHead(503, {
                 'Retry-After': new Date(Date.now() + constants.RETRY_AFTER).toUTCString(),
             })
@@ -95,20 +111,6 @@ module.exports = () => {
             generator.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
         }
 
-        //request process start here
-        let generationTimeout = 0;
-        const imageParams = share.parseUrl(req.url);
-        
-        //send not found
-        if (imageParams == null || !share.isAcceptebleSize(imageParams)) {
-            sendNotFound();
-            return;
-        }
-
-        //generate file name
-        imageParams.fileName = share.getFileName(imageParams);
-
-        const filePath = share.getFilePath(imageParams.fileName);
         fs.exists(filePath, exists => {
             if (exists) {
                 sendFile(filePath)

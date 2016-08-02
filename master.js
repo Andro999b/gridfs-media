@@ -37,17 +37,6 @@ module.exports = () => {
         //request process start here
         let generationTimeout = 0;
         const imageParams = share.parseUrl(req.url);
-        
-        //send not found
-        if (imageParams == null || !share.isAcceptebleSize(imageParams)) {
-            sendNotFound();
-            return;
-        }
-
-        //generate file name
-        imageParams.fileName = share.getFileName(imageParams);
-
-        const filePath = share.getFilePath(imageParams.fileName);
 
         const sendFile = (filePath) => {
             cleanup();
@@ -111,6 +100,17 @@ module.exports = () => {
             generator.removeListener('message', onFileGenerated);//remove listener for prevent posible memory leak
         }
 
+        //send not found
+        if (imageParams == null || !share.isAcceptebleSize(imageParams)) {
+            sendNotFound();
+            return;
+        }
+
+        //generate file name
+        imageParams.fileName = share.getFileName(imageParams);
+
+        const filePath = share.getFilePath(imageParams.fileName);
+
         fs.exists(filePath, exists => {
             if (exists) {
                 sendFile(filePath)
@@ -124,6 +124,7 @@ module.exports = () => {
         req.setTimeout(30000, cleanup)
     });
     server.listen(constants.SERVER_PORT)
+    server.on('connect', (req, socket, head) => socket.setKeepAlive(true))
     //errors
     server.on('error', console.log)
 }

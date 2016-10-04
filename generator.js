@@ -1,4 +1,3 @@
-const cluster = require('cluster');
 const fs = require('fs');
 const mongodb = require("mongodb");
 const pify = require("pify");
@@ -8,7 +7,9 @@ const constants = require("./consts");
 const conver = require("./convert");
 const minify = require("./minify");
 
-const startGenerationQueue = bucket => {
+const EventEmitter = require('events');
+
+const startGenerationQueue = (bucket, emmiter) => {
     //down load from gridfs
     const download = pify(function (id, filename, callback) {
         let contentType, size;
@@ -150,15 +151,19 @@ const startGenerationQueue = bucket => {
         }
     }
 
-    const queue = new ProcessQueue((params) => process.send(params))
-    process.on("message", (params) => queue.enqueue(params));
+    const queue = new ProcessQueue(params => emmiter.emit("finish", params))
+    emmiter.on("generate", params => queue.enqueue(params));
 }
 
 module.exports = () => {
+    const emmiter = new EventEmitter()
+
     pify(mongodb.MongoClient)
         .connect(constants.MONGO_URI)
         .then(db => new mongodb.GridFSBucket(db, { bucketName: constants.BACKET_NAME }))
-        .then(startGenerationQueue)
-        .then(() => console.log('Generator Worker started'))
-        .catch(err => console.log('Fail to start worker', err))
+        .then(bucket => startGenerationQueue(bucket, emmiter))
+        .then(() => console.log('Generator started'))
+        .catch(err => console.log('Fail to start generator', err))
+
+    return emmiter;
 }

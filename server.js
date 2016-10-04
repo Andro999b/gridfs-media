@@ -122,7 +122,10 @@ module.exports = () => {
             }
         });
         //if request timed out stop wait generation finish
-        req.setTimeout(30000, cleanup)
+        req.setTimeout(30000, () => {
+            cleanup();
+            console.log(`[Http Server] Image ${imageParams.fileName} request timeout`)
+        })
     });
     server.listen(constants.SERVER_PORT);
     server.on('connect', (req, socket, head) => socket.setKeepAlive(true));

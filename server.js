@@ -61,7 +61,8 @@ module.exports = () => {
                         'Content-Type': 'image/jpeg;charset=UTF-8',
                         'Content-Length': stat.size,
                         'Cache-Control': constants.CACHE_CONTROL,
-                        'Last-Modified': lastModified
+                        'Last-Modified': lastModified,
+                        'Connection': 'Keep-Alive'
                     });
                     return pfs.readFile(filePath);
                 })
@@ -128,7 +129,9 @@ module.exports = () => {
         })
     });
     server.listen(constants.SERVER_PORT);
-    server.on('connect', (req, socket, head) => socket.setKeepAlive(true));
+    server.on('connection', (socket) => {
+        socket.setKeepAlive(true)
+    });
     //errors
     server.on('error', console.log);
 
